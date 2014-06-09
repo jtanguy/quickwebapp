@@ -1,0 +1,6 @@
+{
+    "quickwebapp.cabal": { "command": "cabal" },
+    "src/*.hs": { "command": "src", "template": ["module {capitalize|dot} where"]},
+    "test/*/Tests.hs": { "command":"test", "template": ["module {capitalize|dot}.Tests where"]},
+    "*": {"make": "cabal build"}
+}
