@@ -1,5 +1,5 @@
 name:                quickwebapp
-version:             1.0.0.0
+version:             1.0.1.0
 synopsis:            A quick webapp generator for any file processing tool
 description:
     A quick-and-dirty api generator, for any function 'Text -> Text'.

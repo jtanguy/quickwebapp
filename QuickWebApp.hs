@@ -11,6 +11,7 @@ module QuickWebApp where
 
 import           Control.Applicative
 import           Control.Monad
+import           Data.Maybe
 import           Data.Aeson              (toJSON)
 import qualified Data.ByteString.Lazy    as BL
 import qualified Data.Text.Lazy          as TL
@@ -32,6 +33,9 @@ class HasTransformer m where
 -- |
 instance HasTransformer (TL.Text -> TL.Text) where
     getTransformer = Transformer "convert" "text/plain"
+
+instance HasTransformer (TL.Text -> Maybe TL.Text) where
+    getTransformer f = Transformer "convert" "text/plain" (fromMaybe "" . f)
 
 -- |
 instance HasTransformer Transformer where
