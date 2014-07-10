@@ -1,8 +1,14 @@
 {-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE TypeSynonymInstances         #-}
+{-# LANGUAGE FlexibleInstances         #-}
 module QuickWebApp where
 
 import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.ByteString  as BS
+import qualified Data.Text.Lazy    as TL
+import qualified Data.Text.Lazy.Encoding    as TL
+import qualified Data.Text  as TS
 import           Web.Scotty
 
 class ToLBS a where
@@ -14,6 +20,15 @@ instance ToLBS BL.ByteString where
 instance ToLBS BS.ByteString where
     toLBS = BL.fromStrict
 
+instance ToLBS TL.Text where
+    toLBS = TL.encodeUtf8
+
+instance ToLBS TS.Text where
+    toLBS = TL.encodeUtf8 . TL.fromStrict
+
+instance ToLBS String where
+    toLBS = BC.pack
+
 class FromLBS a where
     fromLBS :: BL.ByteString -> a
 
@@ -22,6 +37,15 @@ instance FromLBS BL.ByteString where
 
 instance FromLBS BS.ByteString where
     fromLBS = BL.toStrict
+
+instance FromLBS TL.Text where
+    fromLBS = TL.decodeUtf8
+
+instance FromLBS TS.Text where
+    fromLBS = TL.toStrict . TL.decodeUtf8
+
+instance FromLBS String where
+    fromLBS = BC.unpack
 
 -- | 'interactWebOn 3000'
 interactWeb :: (FromLBS a, ToLBS b) => (a -> b) -> IO ()
