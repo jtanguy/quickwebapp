@@ -1,17 +1,22 @@
-{-# LANGUAGE OverloadedStrings         #-}
-{-# LANGUAGE TypeSynonymInstances         #-}
-{-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-| A quick-and-dirty api generator, for any function `a -> b` which can be wrapped
+    inside a function `ByteString -> ByteString`.
+    It is inspired from the 'interact' function from 'Prelude'.
+-}
 module QuickWebApp where
 
-import qualified Data.ByteString.Lazy    as BL
-import qualified Data.ByteString.Lazy.Char8    as BC
-import qualified Data.ByteString  as BS
-import qualified Data.Text.Lazy    as TL
+import qualified Data.ByteString            as BS
+import qualified Data.ByteString.Lazy       as BL
+import qualified Data.ByteString.Lazy.Char8 as BC
+import qualified Data.Text                  as TS
+import qualified Data.Text.Lazy             as TL
 import qualified Data.Text.Lazy.Encoding    as TL
-import qualified Data.Text  as TS
-import Network.HTTP.Types.Status
+import           Network.HTTP.Types.Status
 import           Web.Scotty
 
+-- | Represents types which can be converted to a Lazy 'ByteString'
 class ToLBS a where
     toLBS :: a -> BL.ByteString
 
@@ -30,6 +35,8 @@ instance ToLBS TS.Text where
 instance ToLBS String where
     toLBS = BC.pack
 
+-- | Represents types which can be converted from a Lazy 'ByteString'
+-- This is intended for other String-like types
 class FromLBS a where
     fromLBS :: BL.ByteString -> a
 
@@ -48,14 +55,16 @@ instance FromLBS TS.Text where
 instance FromLBS String where
     fromLBS = BC.unpack
 
--- | Unprocessable entity error code
+-- | Unprocessable entity error code (temporary fix for a missing status in
+-- http-types)
 err422 :: Status
 err422 = mkStatus 422 "Unprocessable Entity"
 
--- | 'interactWebOn 3000'
+-- | Equivalent to 'interactWebOn 3000'
 interactWeb :: (FromLBS a, ToLBS b) => (a -> b) -> IO ()
 interactWeb = interactWebOn 3000
 
+-- | Equivalent to 'interactWebEitherOn 3000'
 interactWebEither :: (FromLBS a, ToLBS b, ToLBS e) => (a -> Either e b) -> IO ()
 interactWebEither = interactWebEitherOn 3000
 
@@ -67,6 +76,8 @@ interactWebOn port f = scotty port $ post "/" $ do
                 raw . toLBS . f . fromLBS $ c
 
 -- | Create an API with a 'POST' endpoint
+-- If the function fails and returns a 'Left' value, return a 422 response with
+-- the error in the body
 interactWebEitherOn :: (FromLBS a, ToLBS b, ToLBS e) => Int -> (a -> Either e b) -> IO ()
 interactWebEitherOn port f = scotty port $ post "/" $ do
                 c <- body
