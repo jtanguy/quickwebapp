@@ -9,6 +9,7 @@ import qualified Data.ByteString  as BS
 import qualified Data.Text.Lazy    as TL
 import qualified Data.Text.Lazy.Encoding    as TL
 import qualified Data.Text  as TS
+import Network.HTTP.Types.Status
 import           Web.Scotty
 
 class ToLBS a where
@@ -47,16 +48,30 @@ instance FromLBS TS.Text where
 instance FromLBS String where
     fromLBS = BC.unpack
 
+-- | Unprocessable entity error code
+err422 :: Status
+err422 = mkStatus 422 "Unprocessable Entity"
+
 -- | 'interactWebOn 3000'
 interactWeb :: (FromLBS a, ToLBS b) => (a -> b) -> IO ()
 interactWeb = interactWebOn 3000
 
--- | Create an API with multiple endpoints:
---
--- - a 'POST' endpoint per transformer (at URI 'name')
--- - a 'GET' endpoint, which lists all the above endpoints
+interactWebEither :: (FromLBS a, ToLBS b, ToLBS e) => (a -> Either e b) -> IO ()
+interactWebEither = interactWebEitherOn 3000
+
+-- | Create an API with a 'POST' endpoint
 interactWebOn :: (FromLBS a, ToLBS b) => Int -> (a -> b) -> IO ()
 interactWebOn port f = scotty port $ post "/" $ do
                 c <- body
                 setHeader "Content-Type" "text/plain"
                 raw . toLBS . f . fromLBS $ c
+
+-- | Create an API with a 'POST' endpoint
+interactWebEitherOn :: (FromLBS a, ToLBS b, ToLBS e) => Int -> (a -> Either e b) -> IO ()
+interactWebEitherOn port f = scotty port $ post "/" $ do
+                c <- body
+                setHeader "Content-Type" "text/plain"
+                case f . fromLBS $ c of
+                    Right res -> raw . toLBS $ res
+                    Left err -> status err422 >> (raw . toLBS $ err)
+
