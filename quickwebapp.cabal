@@ -1,11 +1,11 @@
 name:                quickwebapp
-version:             2.0.1.0
+version:             2.0.1.1
 synopsis:            A quick webapp generator for any file processing tool
 description:
     A quick-and-dirty api generator, inspired from the 'interact' function from
     'Prelude'.
     .
-    > interactWeb [ reverse ]
+    > interactWeb  reverse 
     .
     This creates a server listening on port 3000.
     .
