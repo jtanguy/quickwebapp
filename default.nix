@@ -1,10 +1,14 @@
-{ mkDerivation, base, bytestring, http-types, scotty, stdenv, text
+{ mkDerivation, aeson, base, bytestring, containers, either, lucid
+, servant, servant-lucid, servant-server, stdenv, text, warp
 }:
 mkDerivation {
   pname = "quickwebapp";
-  version = "2.1.0.0";
+  version = "3.0.0.0";
   src = ./.;
-  buildDepends = [ base bytestring http-types scotty text ];
+  libraryHaskellDepends = [
+    aeson base bytestring containers either lucid servant servant-lucid
+    servant-server text warp
+  ];
   description = "A quick webapp generator for any file processing tool";
   license = stdenv.lib.licenses.gpl3;
 }

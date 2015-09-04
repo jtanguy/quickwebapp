@@ -1,5 +1,5 @@
 name:                quickwebapp
-version:             2.1.1.0
+version:             3.0.0.0
 synopsis:            A quick webapp generator for any file processing tool
 description:
     A quick-and-dirty api generator, inspired from the 'interact' function from
@@ -29,9 +29,15 @@ source-repository head
 library
   exposed-modules:     QuickWebApp
   build-depends:       base ==4.*,
+                       containers,
                        bytestring,
                        text,
-                       http-types,
-                       scotty
-  -- hs-source-dirs:      src
+                       aeson,
+                       either,
+                       servant,
+                       servant-server,
+                       servant-lucid,
+                       lucid,
+                       warp
+
   default-language:    Haskell2010
