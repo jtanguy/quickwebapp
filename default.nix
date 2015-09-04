@@ -3,7 +3,7 @@
 }:
 mkDerivation {
   pname = "quickwebapp";
-  version = "3.0.0.1";
+  version = "3.0.0.2";
   src = ./.;
   libraryHaskellDepends = [
     aeson base bytestring containers either lucid servant servant-lucid
