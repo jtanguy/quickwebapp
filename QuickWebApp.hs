@@ -4,9 +4,9 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeOperators         #-}
 
-{-| A quick-and-dirty api generator, for any function `a -> b` which can be wrapped
-    inside a function `ByteString -> ByteString`.
-    It is inspired from the 'interact' function from 'Prelude'.
+{-| A quick-and-dirty api generator, for any function @a -> "Either" "String" b@.
+ 
+If you only have a function @f :: a -> b@, simply run @interactWeb ("Right" .f)@
 -}
 module QuickWebApp (
     interactWeb
@@ -23,7 +23,7 @@ import           GHC.Generics
 import           Network.Wai.Handler.Warp
 import           System.Environment
 
-import Lucid
+import           Lucid
 import           Servant
 import           Servant.HTML.Lucid
 
@@ -85,6 +85,16 @@ instance FromFormUrlEncoded Input where
 newtype Output = Output { output :: Text } deriving (Show, Eq, Generic)
 instance ToJSON Output
 
+{-| Tranform a function into a webapp.
+The inputs and outputs must implement 'FromText' and 'ToText', respectively.
+
+You can query it via a browser at <http://localhost:8080> or by using
+curl/httpie
+
+  > http :8080 input="<your input string>"
+
+  > curl localhost:8080 -d input="<your input string>"
+-}
 interactWeb :: (FromText a, ToText b) => (a -> Either String b) -> IO ()
 interactWeb f = do
     port <- maybe 8080 read <$> lookupEnv "PORT"
